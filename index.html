@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calendário Anual</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='5' y='8' width='54' height='51' rx='10' fill='%23b91c1c'/%3E%3Crect x='5' y='8' width='54' height='15' rx='10' fill='%23dc2626'/%3E%3Cpath d='M18 4v12M46 4v12' stroke='white' stroke-width='6' stroke-linecap='round'/%3E%3Cpath d='M16 31h8M28 31h8M40 31h8M16 42h8M28 42h8M40 42h8' stroke='white' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f3f6fa; --surface:#ffffff; --surface2:#f8fafc; --text:#172033;
+  --muted:#667085; --line:#e4e9f0; --primary:#b91c1c; --primary2:#dc2626;
+  --blue:#2563eb; --green:#16a34a; --holiday:#dc2626; --municipal:#d97706;
+  --today:#fff1f2; --shadow:0 12px 30px rgba(15,23,42,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:linear-gradient(180deg,#eef3f8 0%,var(--bg) 320px);
+  color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  font-size:17px; line-height:1.45;
+}
+button,select,textarea{font:inherit}
+button{cursor:pointer}
+.topbar{
+  position:sticky; top:0; z-index:20; background:rgba(255,255,255,.94);
+  backdrop-filter:blur(14px); border-bottom:1px solid var(--line);
+}
+.topbar-inner{
+  max-width:1600px; margin:auto; padding:18px 28px; display:flex;
+  align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-icon{
+  width:50px;height:50px;border-radius:15px;background:linear-gradient(135deg,var(--primary),var(--primary2));
+  color:white;display:grid;place-items:center;font-size:27px;box-shadow:0 8px 18px rgba(185,28,28,.25)
+}
+.brand h1{margin:0;font-size:27px;letter-spacing:-.5px}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:15px}
+.actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.btn,.select{
+  border:1px solid var(--line);background:var(--surface);color:var(--text);
+  border-radius:11px;padding:10px 14px;font-weight:650;transition:.18s;
+}
+.btn:hover,.select:hover{border-color:#c6ceda;transform:translateY(-1px)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn.primary:hover{background:#991b1b}
+.year-control{
+  display:flex;align-items:center;gap:8px;background:var(--surface2);
+  border:1px solid var(--line);border-radius:13px;padding:5px;
+}
+.year-control button{
+  width:38px;height:38px;border:0;border-radius:9px;background:transparent;color:var(--text);font-size:25px
+}
+.year-control button:hover{background:#e9edf3}
+.year{min-width:80px;text-align:center;font-size:22px;font-weight:800}
+.hero{max-width:1600px;margin:auto;padding:28px 28px 12px}
+.hero-row{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap}
+.hero h2{margin:0;font-size:32px;letter-spacing:-.8px}
+.hero p{margin:6px 0 0;color:var(--muted);font-size:17px}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.stat{
+  background:var(--surface);border:1px solid var(--line);border-radius:13px;
+  padding:10px 15px;min-width:115px;box-shadow:0 5px 16px rgba(15,23,42,.04)
+}
+.stat strong{display:block;font-size:20px}.stat span{color:var(--muted);font-size:13px}
+.legend{
+  max-width:1600px;margin:10px auto 0;padding:0 28px 20px;display:flex;
+  gap:18px;flex-wrap:wrap;color:var(--muted);font-size:14px
+}
+.legend-item{display:flex;align-items:center;gap:7px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.dot.work{background:var(--blue)} .dot.personal{background:var(--green)}
+.dot.holiday{background:var(--holiday)} .dot.municipal{background:var(--municipal)}
+main{
+  max-width:1600px;margin:auto;padding:8px 28px 42px;
+  display:grid;grid-template-columns:repeat(4,minmax(250px,1fr));gap:18px;
+}
+.month{
+  background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  padding:17px;box-shadow:var(--shadow);transition:.2s;min-width:0
+}
+.month:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(15,23,42,.10)}
+.month-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.month h3{margin:0;font-size:21px;text-transform:capitalize;letter-spacing:-.3px}
+.month-badge{font-size:12px;color:var(--muted);background:var(--surface2);border:1px solid var(--line);padding:4px 8px;border-radius:999px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
+.weekday{font-size:13px;font-weight:750;color:#8a94a6;padding:4px 0 7px}
+.day{
+  position:relative;aspect-ratio:1;border:0;border-radius:10px;background:transparent;
+  color:var(--text);font-size:16px;font-weight:600;min-width:0
+}
+.day:hover{background:#eef2f7}
+.day.sunday,.day.holiday{color:var(--holiday)}
+.day.municipal{color:var(--municipal)}
+.day.today{background:var(--today);outline:2px solid #f87171;color:#991b1b}
+.day.has-note{font-weight:800}
+.day i{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);display:flex;gap:3px}
+.day i b{width:5px;height:5px;border-radius:50%}
+.day.empty{pointer-events:none}
+.footer{
+  max-width:1600px;margin:auto;padding:0 28px 35px;color:var(--muted);
+  font-size:13px;text-align:center
+}
+dialog{
+  width:min(620px,94vw);border:0;border-radius:22px;padding:0;background:var(--surface);
+  color:var(--text);box-shadow:0 30px 80px rgba(15,23,42,.25)
+}
+dialog::backdrop{background:rgba(15,23,42,.52);backdrop-filter:blur(3px)}
+.modal-head{padding:24px 26px 17px;border-bottom:1px solid var(--line)}
+.modal-head h3{margin:0;font-size:24px;text-transform:capitalize}
+.holiday-name{color:var(--holiday);font-size:14px;font-weight:700;margin-top:4px}
+.modal-body{padding:20px 26px}
+.field{margin-bottom:17px}
+.field label{display:flex;align-items:center;gap:8px;font-weight:800;margin-bottom:7px}
+textarea{
+  width:100%;min-height:125px;resize:vertical;border:1px solid var(--line);
+  border-radius:13px;padding:12px 14px;background:var(--surface2);color:var(--text);
+  outline:none
+}
+textarea:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+.modal-actions{
+  display:flex;justify-content:space-between;gap:10px;padding:16px 26px 22px;
+  border-top:1px solid var(--line)
+}
+.modal-actions .right{display:flex;gap:9px}
+@media(max-width:1200px){main{grid-template-columns:repeat(3,minmax(230px,1fr))}}
+@media(max-width:900px){main{grid-template-columns:repeat(2,minmax(240px,1fr))}}
+@media(max-width:650px){
+  body{font-size:16px}.topbar-inner,.hero,.legend,main,.footer{padding-left:16px;padding-right:16px}
+  .brand h1{font-size:23px}.hero h2{font-size:27px}
+  main{grid-template-columns:1fr;gap:14px}.month{padding:16px}
+  .actions{width:100%}.select{flex:1;min-width:180px}
+}
+@media print{
+  body{background:#fff}.topbar{position:static}.actions,.legend,.stats{display:none}
+  .hero{padding-top:10px}main{grid-template-columns:repeat(3,1fr);padding:0 10px}
+  .month{box-shadow:none;break-inside:avoid}.month:hover{transform:none}dialog{display:none}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-icon">📅</div>
+      <div>
+        <h1>Calendário Anual</h1>
+        <p>Planeje seus compromissos, tarefas e datas importantes</p>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="year-control">
+        <button id="prev" aria-label="Ano anterior">‹</button>
+        <span id="year" class="year"></span>
+        <button id="next" aria-label="Próximo ano">›</button>
+      </div>
+      <button class="btn primary" id="hoje">Hoje</button>
+      <button class="btn" id="exp">Exportar</button>
+      <button class="btn" id="imp">Importar</button>
+      <button class="btn" id="prt">Imprimir</button>
+      <input type="file" id="file" accept=".json" hidden>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-row">
+    <div>
+      <h2 id="titleYear">Calendário de 2026</h2>
+      <p id="cityDescription">Feriados federais, estaduais e municipais de Belém</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><strong id="holidayCount">0</strong><span>feriados</span></div>
+      <div class="stat"><strong id="noteCount">0</strong><span>dias anotados</span></div>
+      <div class="stat"><strong>12</strong><span>meses</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="legend">
+  <span class="legend-item"><i class="dot work"></i> Trabalho</span>
+  <span class="legend-item"><i class="dot personal"></i> Pessoal</span>
+  <span class="legend-item"><i class="dot holiday"></i> Feriado / domingo</span>
+  <span class="legend-item"><i class="dot municipal"></i> Feriado municipal</span>
+  <span>💡 Clique em qualquer dia para adicionar uma anotação.</span>
+</div>
+
+<main id="cal"></main>
+
+<div class="footer">As anotações são salvas automaticamente neste navegador.</div>
+
+<dialog id="dlg">
+  <div class="modal-head">
+    <h3 id="dt"></h3>
+    <div class="holiday-name" id="hn"></div>
+  </div>
+  <div class="modal-body">
+    <div class="field">
+      <label><span class="dot work"></span> Trabalho</label>
+      <textarea id="nw" placeholder="Reuniões, prazos, tarefas..."></textarea>
+    </div>
+    <div class="field">
+      <label><span class="dot personal"></span> Pessoal</label>
+      <textarea id="np" placeholder="Compromissos, aniversários, lembretes..."></textarea>
+    </div>
+  </div>
+  <div class="modal-actions">
+    <button class="btn" id="clr">Limpar dia</button>
+    <div class="right"><button class="btn primary" id="ok">Salvar e fechar</button></div>
+  </div>
+</dialog>
+
+<script>
+const MESES=["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const DIAS=["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
+const SEMANA=["D","S","T","Q","Q","S","S"];
+const KEY="calendario-anual-v1";
+let notes={},cur=null,year=new Date().getFullYear(),city="Belém";
+
+try{notes=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){notes={}}
+
+const pad=n=>String(n).padStart(2,"0");
+const ymd=(y,m,d)=>y+"-"+pad(m+1)+"-"+pad(d);
+
+const CONC=[11,8,"Nossa Senhora da Conceição"],SSEB=[0,20,"São Sebastião, padroeiro"];
+const MUN={
+  "Belém":[[0,12,"Aniversário de Belém"],CONC]
+};
+city="Belém";
+
+function save(){try{localStorage.setItem(KEY,JSON.stringify(notes))}catch(e){}}
+
+function easter(y){
+  const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),
+  g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,
+  l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),
+  mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;
+  return new Date(y,mo-1,da);
+}
+
+function holidays(y){
+  const H={},T={},add=(m,d,n,t)=>{
+    const k=ymd(y,m,d);
+    if(H[k]){H[k]+=" / "+n;return}
+    H[k]=n;if(t)T[k]=t;
+  };
+  add(0,1,"Confraternização Universal");
+  add(3,21,"Tiradentes");
+  add(4,1,"Dia do Trabalho");
+  add(8,7,"Independência do Brasil");
+  add(9,12,"Nossa Senhora Aparecida");
+  add(10,2,"Finados");
+  add(10,15,"Proclamação da República");
+  add(10,20,"Consciência Negra");
+  add(11,25,"Natal");
+  const e=easter(y),mv=(n,name)=>{const t=new Date(e);t.setDate(e.getDate()+n);add(t.getMonth(),t.getDate(),name)};
+  mv(-48,"Carnaval (segunda)");
+  mv(-47,"Carnaval");
+  mv(-2,"Sexta-feira Santa");
+  mv(0,"Páscoa");
+  mv(60,"Corpus Christi");
+  add(7,15,"Adesão do Pará à Independência (estadual)");
+  (MUN[city]||[]).forEach(([m,d,n])=>add(m,d,n,"mun"));
+  if(city==="Belém"){
+    const p=1+(7-new Date(y,9,1).getDay())%7,c=p+7;
+    add(9,c,"Círio de Nazaré","mun");
+    add(9,c+1,"Pós-Círio","mun");
+  }
+  return {H,T};
+}
+
+function render(){
+  document.getElementById("year").textContent=year;
+  document.getElementById("titleYear").textContent="Calendário de "+year;
+  document.getElementById("cityDescription").textContent="Feriados federais, estaduais e municipais de Belém · "+city;
+
+  const {H,T}=holidays(year);
+  const now=new Date(),today=ymd(now.getFullYear(),now.getMonth(),now.getDate());
+  const cal=document.getElementById("cal");
+  cal.innerHTML="";
+
+  const holidayTotal=Object.keys(H).length;
+  const noteTotal=Object.keys(notes).filter(k=>notes[k]&&(notes[k].w||notes[k].p)).length;
+  document.getElementById("holidayCount").textContent=holidayTotal;
+  document.getElementById("noteCount").textContent=noteTotal;
+
+  MESES.forEach((name,m)=>{
+    const box=document.createElement("section");
+    box.className="month";
+    const first=new Date(year,m,1).getDay();
+    const len=new Date(year,m+1,0).getDate();
+    const monthHolidays=Object.keys(H).filter(k=>k.slice(5,7)===pad(m+1)).length;
+
+    box.innerHTML='<div class="month-head"><h3>'+name+'</h3><span class="month-badge">'+monthHolidays+' feriado'+(monthHolidays===1?'':'s')+'</span></div>';
+
+    const grid=document.createElement("div");
+    grid.className="grid";
+
+    SEMANA.forEach((w,i)=>{
+      const s=document.createElement("div");
+      s.className="weekday";
+      s.textContent=w;
+      if(i===0||i===6)s.style.color="#dc2626";
+      grid.appendChild(s);
+    });
+
+    for(let i=0;i<first;i++){
+      const empty=document.createElement("div");
+      empty.className="day empty";
+      grid.appendChild(empty);
+    }
+
+    for(let d=1;d<=len;d++){
+      const k=ymd(year,m,d),wd=new Date(year,m,d).getDay();
+      const b=document.createElement("button");
+      b.className="day"+(wd===0?" sunday":"")+(H[k]?(T[k]==="mun"?" municipal":" holiday"):"")+(k===today?" today":"");
+      b.textContent=d;
+      if(H[k])b.title=H[k];
+
+      const n=notes[k];
+      if(n&&(n.w||n.p)){
+        b.classList.add("has-note");
+        const i=document.createElement("i");
+        if(n.w){const x=document.createElement("b");x.style.background="var(--blue)";i.appendChild(x)}
+        if(n.p){const x=document.createElement("b");x.style.background="var(--green)";i.appendChild(x)}
+        b.appendChild(i);
+      }
+      b.onclick=()=>openDay(k,new Date(year,m,d),H[k]);
+      grid.appendChild(b);
+    }
+
+    box.appendChild(grid);
+    cal.appendChild(box);
+  });
+}
+
+const dlg=document.getElementById("dlg"),nw=document.getElementById("nw"),np=document.getElementById("np");
+
+function openDay(k,dt,h){
+  cur=k;
+  document.getElementById("dt").textContent=DIAS[dt.getDay()]+", "+dt.getDate()+" de "+MESES[dt.getMonth()]+" de "+dt.getFullYear();
+  document.getElementById("hn").textContent=h?"🎉 "+h:"";
+  const n=notes[k]||{};
+  nw.value=n.w||"";
+  np.value=n.p||"";
+  dlg.showModal();
+  setTimeout(()=>nw.focus(),50);
+}
+
+function store(){
+  if(!cur)return;
+  const w=nw.value.trim(),p=np.value.trim();
+  if(w||p)notes[cur]={w:nw.value,p:np.value};
+  else delete notes[cur];
+  save();
+}
+
+nw.oninput=np.oninput=store;
+dlg.addEventListener("close",()=>{store();render()});
+document.getElementById("ok").onclick=()=>dlg.close();
+document.getElementById("clr").onclick=()=>{nw.value="";np.value="";store();render();dlg.close()};
+dlg.addEventListener("click",e=>{if(e.target===dlg)dlg.close()});
+
+document.getElementById("prev").onclick=()=>{year--;render()};
+document.getElementById("next").onclick=()=>{year++;render()};
+document.getElementById("hoje").onclick=()=>{year=new Date().getFullYear();render()};
+document.getElementById("prt").onclick=()=>window.print();
+
+document.getElementById("exp").onclick=()=>{
+  const a=document.createElement("a");
+  a.href="data:application/json;charset=utf-8,"+encodeURIComponent(JSON.stringify(notes,null,2));
+  a.download="calendario-anotacoes.json";
+  a.click();
+};
+
+document.getElementById("imp").onclick=()=>document.getElementById("file").click();
+document.getElementById("file").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{Object.assign(notes,JSON.parse(r.result));save();render();alert("Anotações importadas.")}
+    catch(x){alert("Arquivo inválido.")}
+  };
+  r.readAsText(f);
+};
+
+render();
+</script>
+</body>
+</html>
