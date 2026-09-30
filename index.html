@@ -9,7 +9,7 @@
 :root{
   --bg:#f3f6fa; --surface:#ffffff; --surface2:#f8fafc; --text:#172033;
   --muted:#667085; --line:#e4e9f0; --primary:#b91c1c; --primary2:#dc2626;
-  --blue:#2563eb; --green:#16a34a; --holiday:#dc2626; --municipal:#d97706;
+  --blue:#2563eb; --green:#16a34a; --purple:#7c3aed; --holiday:#dc2626; --municipal:#d97706;
   --today:#fff1f2; --shadow:0 12px 30px rgba(15,23,42,.08);
 }
 *{box-sizing:border-box}
@@ -69,7 +69,7 @@ button{cursor:pointer}
 }
 .legend-item{display:flex;align-items:center;gap:7px}
 .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
-.dot.work{background:var(--blue)} .dot.personal{background:var(--green)}
+.dot.work{background:var(--blue)} .dot.personal{background:var(--green)} .dot.run{background:var(--purple)}
 .dot.holiday{background:var(--holiday)} .dot.municipal{background:var(--municipal)}
 main{
   max-width:1600px;margin:auto;padding:8px 28px 42px;
@@ -180,6 +180,7 @@ textarea:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(37,99,235,.08)}
 <div class="legend">
   <span class="legend-item"><i class="dot work"></i> Trabalho</span>
   <span class="legend-item"><i class="dot personal"></i> Pessoal</span>
+  <span class="legend-item"><i class="dot run"></i> Corridas</span>
   <span class="legend-item"><i class="dot holiday"></i> Feriado / domingo</span>
   <span class="legend-item"><i class="dot municipal"></i> Feriado municipal</span>
   <span>💡 Clique em qualquer dia para adicionar uma anotação.</span>
@@ -202,6 +203,10 @@ textarea:focus{border-color:#94a3b8;box-shadow:0 0 0 3px rgba(37,99,235,.08)}
     <div class="field">
       <label><span class="dot personal"></span> Pessoal</label>
       <textarea id="np" placeholder="Compromissos, aniversários, lembretes..."></textarea>
+    </div>
+    <div class="field">
+      <label><span class="dot run"></span> Corridas</label>
+      <textarea id="nc" placeholder="Treinos, provas, distância, tempo, ritmo..."></textarea>
     </div>
   </div>
   <div class="modal-actions">
@@ -280,7 +285,7 @@ function render(){
   cal.innerHTML="";
 
   const holidayTotal=Object.keys(H).length;
-  const noteTotal=Object.keys(notes).filter(k=>notes[k]&&(notes[k].w||notes[k].p)).length;
+  const noteTotal=Object.keys(notes).filter(k=>notes[k]&&(notes[k].w||notes[k].p||notes[k].c)).length;
   document.getElementById("holidayCount").textContent=holidayTotal;
   document.getElementById("noteCount").textContent=noteTotal;
 
@@ -318,11 +323,12 @@ function render(){
       if(H[k])b.title=H[k];
 
       const n=notes[k];
-      if(n&&(n.w||n.p)){
+      if(n&&(n.w||n.p||n.c)){
         b.classList.add("has-note");
         const i=document.createElement("i");
         if(n.w){const x=document.createElement("b");x.style.background="var(--blue)";i.appendChild(x)}
         if(n.p){const x=document.createElement("b");x.style.background="var(--green)";i.appendChild(x)}
+        if(n.c){const x=document.createElement("b");x.style.background="var(--purple)";i.appendChild(x)}
         b.appendChild(i);
       }
       b.onclick=()=>openDay(k,new Date(year,m,d),H[k]);
@@ -334,7 +340,7 @@ function render(){
   });
 }
 
-const dlg=document.getElementById("dlg"),nw=document.getElementById("nw"),np=document.getElementById("np");
+const dlg=document.getElementById("dlg"),nw=document.getElementById("nw"),np=document.getElementById("np"),nc=document.getElementById("nc");
 
 function openDay(k,dt,h){
   cur=k;
@@ -343,22 +349,23 @@ function openDay(k,dt,h){
   const n=notes[k]||{};
   nw.value=n.w||"";
   np.value=n.p||"";
+  nc.value=n.c||"";
   dlg.showModal();
   setTimeout(()=>nw.focus(),50);
 }
 
 function store(){
   if(!cur)return;
-  const w=nw.value.trim(),p=np.value.trim();
-  if(w||p)notes[cur]={w:nw.value,p:np.value};
+  const w=nw.value.trim(),p=np.value.trim(),c=nc.value.trim();
+  if(w||p||c)notes[cur]={w:nw.value,p:np.value,c:nc.value};
   else delete notes[cur];
   save();
 }
 
-nw.oninput=np.oninput=store;
+nw.oninput=np.oninput=nc.oninput=store;
 dlg.addEventListener("close",()=>{store();render()});
 document.getElementById("ok").onclick=()=>dlg.close();
-document.getElementById("clr").onclick=()=>{nw.value="";np.value="";store();render();dlg.close()};
+document.getElementById("clr").onclick=()=>{nw.value="";np.value="";nc.value="";store();render();dlg.close()};
 dlg.addEventListener("click",e=>{if(e.target===dlg)dlg.close()});
 
 document.getElementById("prev").onclick=()=>{year--;render()};
